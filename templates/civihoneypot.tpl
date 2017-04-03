@@ -1,5 +1,4 @@
 {* template block that contains the new field *}
-<div>{debug}</div>
 <div id={$fieldname} hidden>
   <div>{$form.$fieldname.label}</div>
   <div>{$form.$fieldname.html}</div>
