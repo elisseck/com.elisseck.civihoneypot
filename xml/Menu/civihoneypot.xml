@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/honeypot/settings</path>
+    <page_callback>CRM_Civihoneypot_Form_HoneypotSettings</page_callback>
+    <title>Honeypot Settings</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
