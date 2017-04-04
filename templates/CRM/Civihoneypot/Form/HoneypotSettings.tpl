@@ -12,6 +12,11 @@
         <td class="content">{$form.field_names.html}
           <p class="description">{ts domain='com.elisseck.civihoneypot'}Names for honeypot fields - use a comma separated list for multiple randomized names e.g. url,link,username{/ts}</p></td>
       </tr>
+	  <tr>
+        <td class="label">{$form.limit.label}</td>
+        <td class="content">{$form.limit.html}
+          <p class="description">{ts domain='com.elisseck.civihoneypot'}Time limiter for protected forms. Honeypot will prevent submissions in under this number of seconds after form loads.{/ts}</p></td>
+      </tr>
     </tbody>
   </table>
 

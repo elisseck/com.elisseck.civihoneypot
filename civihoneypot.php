@@ -11,6 +11,7 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
   $formid = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'form_ids'));
   
   if (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid))) {
+	$timestamp = $_SERVER['REQUEST_TIME'];
 	$fieldname = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'field_names'));
     $max = count($fieldname) - 1;
     $randfieldname = $fieldname[rand(0,$max)];
@@ -19,9 +20,11 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
     $templatePath = realpath(dirname(__FILE__)."/templates");
 	$template = CRM_Core_Smarty::singleton();
 	$template->assign_by_ref( 'fieldname', $randfieldname);
+	$template->assign_by_ref( 'timestamp', $timestamp);
 	
     // Add the field element in the form
     $form->addElement('text', $randfieldname, $randfieldname);
+	$form->addElement('text', 'timestamp', 'timestamp');
 	
     // dynamically insert a template block in the page
     CRM_Core_Region::instance('page-body')->add(array(
@@ -35,10 +38,19 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
  *
  */
 function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
-  $formid = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'form_ids'));
-    
+    $formid = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'form_ids'));
+  
 	//check for honeypot field values from randomized fields
     if (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid))) {
+	  $limit = CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'limit');
+	  if ($limit !== null) {
+	    $now = $_SERVER['REQUEST_TIME'];
+	    $then = $fields['timestamp'];
+	    if ($now - $then < $limit) {
+		  $errors['fast submission'] = ts( 'User submitted a CiviCRM form too quickly' );
+	    }
+	  }
+	  
 	  $fieldname = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'field_names'));
 	  foreach ($fields as $key => $value) {
 		if (in_array($key, $fieldname)) {
