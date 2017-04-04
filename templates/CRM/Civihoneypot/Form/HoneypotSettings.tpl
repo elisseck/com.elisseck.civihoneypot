@@ -17,9 +17,14 @@
         <td class="content">{$form.limit.html}
           <p class="description">{ts domain='com.elisseck.civihoneypot'}Time limiter for protected forms. Honeypot will prevent submissions in under this number of seconds after form loads.{/ts}</p></td>
       </tr>
+	  <tr>
+        <td class="label">{$form.ipban.label}</td>
+        <td class="content">{$form.ipban.html}
+          <p class="description">{ts domain='com.elisseck.civihoneypot'}Enter a comma separated list of IP addresses you would like to ban from Contribution pages.{/ts}</p></td>
+      </tr>
     </tbody>
   </table>
-
+ 
 {* FOOTER *}
 <div class="crm-submit-buttons">
 {include file="CRM/common/formButtons.tpl" location="bottom"}

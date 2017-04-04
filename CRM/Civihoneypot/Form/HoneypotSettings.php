@@ -27,6 +27,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
       $this->add('text', 'form_ids', ts('Form IDs', array('domain' => 'com.elisseck.civihoneypot')));
       $this->add('text', 'field_names', ts('Field Names', array('domain' => 'com.elisseck.civihoneypot')));
 	  $this->add('text', 'limit', ts('Time Limiter', array('domain' => 'com.elisseck.civihoneypot')));
+	  $this->add('textarea', 'ipban', ts('Banned IP Addresses', array('domain' => 'com.elisseck.civihoneypot')));
       $this->addRule('form_ids', 'Enter Form IDs', 'required');
       $this->addRule('field_names', 'Enter Field Names', 'required');
     }
@@ -35,6 +36,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
         'form_ids' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'form_ids'),
         'field_names' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'field_names'),
 		'limit' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'limit'),
+		'ipban' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'ipban'),
       );
       return $defaults;
     }
@@ -43,6 +45,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
       CRM_Core_BAO_Setting::setItem($values['form_ids'], self::SETTINGS, 'form_ids');
       CRM_Core_BAO_Setting::setItem($values['field_names'], self::SETTINGS, 'field_names');
 	  CRM_Core_BAO_Setting::setItem($values['limit'], self::SETTINGS, 'limit');
+	  CRM_Core_BAO_Setting::setItem($values['ipban'], self::SETTINGS, 'ipban');
     }
   }
 
