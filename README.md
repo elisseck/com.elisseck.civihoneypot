@@ -6,7 +6,7 @@ Features:
 - Classic hidden honeypot field, configurable name and id
 - Configure which Contribute forms to protect by form ID (More form types coming in the future)
 - Configurable velocity limiter for submissions - set the minimum number of seconds that must pass before you accept a form submission
-- IP Banning from protected forms based on manually entered list (Supports wildcard bans such as 198.168.0.*, 198.168.*, 198.* etc. Use with caution!).
+- IP Banning from protected forms based on manually entered list (Supports wildcard bans such as 198.168.0.\*, 198.168.\*, 198.* etc. Use with caution!).
 
 How to Use:
 1) Download, install, and enable this CiviCRM extension
