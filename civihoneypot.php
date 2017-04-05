@@ -12,7 +12,7 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
   if (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid))) {
 	$deny = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'ipban'));
 	if (in_array ($_SERVER['REMOTE_ADDR'], $deny)) {
-      header("location: http://nesea.org/404");
+      header("location: http://example.org/");
 	  $errors['Banned User Access'] = ts( 'Banned IP was denied access to a CiviCRM Contribution Form' );
     }
 	
