@@ -3,21 +3,27 @@
 require_once 'civihoneypot.civix.php';
 const HONEYPOT_SETTINGS = 'honeypot';
 
+/*
+* Retrieve honeypot settings individually
+*/
+function _getHoneypotValues($setting) {
+  $values = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, $setting));
+  return $values;
+}
 /**
  * Implements hook_civicrm_buildForm().
  *
  */
 function civihoneypot_civicrm_buildForm($formName, &$form) {
-  $formid = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'form_ids'));
+  $formid = _getHoneypotValues('form_ids');
   if (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid))) {
-	$deny = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'ipban'));
+	$deny = _getHoneypotValues('ipban');
 	if (in_array ($_SERVER['REMOTE_ADDR'], $deny)) {
       header("location: http://example.org/");
 	  $errors['Banned User Access'] = ts( 'Banned IP was denied access to a CiviCRM Contribution Form' );
     }
-	
 	$timestamp = $_SERVER['REQUEST_TIME'];
-	$fieldname = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'field_names'));
+	$fieldname = _getHoneypotValues('field_names');
     $max = count($fieldname) - 1;
     $randfieldname = $fieldname[rand(0,$max)];
 	
@@ -43,7 +49,7 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
  *
  */
 function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
-    $formid = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'form_ids'));
+    $formid = _getHoneypotValues('form_ids');
   
 	//check for honeypot field values from randomized fields
     if (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid))) {
@@ -56,7 +62,7 @@ function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form,
 	    }
 	  }
 	  
-	  $fieldname = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'field_names'));
+	  $fieldname = _getHoneypotValues('field_names');
 	  foreach ($fields as $key => $value) {
 		if (in_array($key, $fieldname)) {
 		  if ($value) {

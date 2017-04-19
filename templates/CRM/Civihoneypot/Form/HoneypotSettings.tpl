@@ -5,7 +5,7 @@
       <tr>
         <td class="label">{$form.form_ids.label}</td>
         <td class="content">{$form.form_ids.html}
-          <p class="description">{ts domain='com.elisseck.civihoneypot'}Form IDs to place honeypot - use a comma separated list for multiple forms e.g. 1,2,3{/ts}</p></td>
+          <p class="description">{ts domain='com.elisseck.civihoneypot'}Choose which contribution pages you would like to protect{/ts}</p></td>
       </tr>
       <tr>
         <td class="label">{$form.field_names.label}</td>

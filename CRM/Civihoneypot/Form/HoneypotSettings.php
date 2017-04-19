@@ -24,7 +24,13 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
   }
   function processHoneypotOptions($mode) {
     if ( $mode == 'build' ) {
-      $this->add('text', 'form_ids', ts('Form IDs', array('domain' => 'com.elisseck.civihoneypot')));
+	  $this->addEntityRef('form_ids', ts('Contribution Pages'), array(
+		'entity' => 'ContributionPage',
+		'placeholder' => ts('- Select Contribution Page -'),
+		'select' => array('minimumInputLength' => 0),
+		'multiple' => TRUE,
+		'api' => array('label_field' => 'title'),
+	  ));
       $this->add('text', 'field_names', ts('Field Names', array('domain' => 'com.elisseck.civihoneypot')));
 	  $this->add('text', 'limit', ts('Time Limiter', array('domain' => 'com.elisseck.civihoneypot')));
 	  $this->add('textarea', 'ipban', ts('Banned IP Addresses', array('domain' => 'com.elisseck.civihoneypot')));
