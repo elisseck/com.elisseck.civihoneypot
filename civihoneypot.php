@@ -18,7 +18,10 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
   $formid = _getHoneypotValues('form_ids');
   if (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid))) {
 	$deny = _getHoneypotValues('ipban');
-	if (in_array ($_SERVER['REMOTE_ADDR'], $deny)) {
+	$remote = $_SERVER['REMOTE_ADDR'];
+	$parts = explode("." , $remote);
+	$wilds = array($parts[0].'.*',$parts[0].'.'.$parts[1].'.*',$parts[0].'.'.$parts[1].'.'.$parts[2].'.*');
+	if (in_array ($remote, $deny) || (bool)array_intersect($wilds, $deny)) {
       header("location: http://example.org/");
 	  $errors['Banned User Access'] = ts( 'Banned IP was denied access to a CiviCRM Contribution Form' );
     }
