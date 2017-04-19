@@ -14,4 +14,4 @@ How to Use:
 3) Navigate to CiviCRM>Administer>Honeypot Settings and set at least one Form ID, and at least one field name.
 
 Next Priority:
-Suggestions welcome, open an issue in this repo. I can't promise anything that isn't in line with what this organization needs.
+Suggestions welcome, open an issue in this repo. I currently can't promise things not in line with what this organization needs, but please feel free to PR!
