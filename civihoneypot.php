@@ -16,7 +16,7 @@ function _getHoneypotValues($setting) {
  */
 function civihoneypot_civicrm_buildForm($formName, &$form) {
   $formid = _getHoneypotValues('form_ids');
-  if (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid))) {
+  if (_getHoneypotValues('protect_all') || (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid)))) {
 	$deny = _getHoneypotValues('ipban');
 	$remote = $_SERVER['REMOTE_ADDR'];
 	$parts = explode("." , $remote);

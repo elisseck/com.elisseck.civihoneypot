@@ -8,6 +8,11 @@
           <p class="description">{ts domain='com.elisseck.civihoneypot'}Choose which contribution pages you would like to protect{/ts}</p></td>
       </tr>
       <tr>
+        <td class="label">{$form.protect_all.label}</td>
+        <td class="content">{$form.protect_all.html}
+          <p class="description">{ts domain='com.elisseck.civihoneypot'}Alternatively, protect all contribution pages by ticking this checkbox{/ts}</p></td>
+      </tr>
+      <tr>
         <td class="label">{$form.field_names.label}</td>
         <td class="content">{$form.field_names.html}
           <p class="description">{ts domain='com.elisseck.civihoneypot'}Names for honeypot fields - use a comma separated list for multiple randomized names e.g. url,link,username{/ts}</p></td>
