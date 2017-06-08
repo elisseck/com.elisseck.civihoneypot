@@ -8,15 +8,17 @@ const HONEYPOT_SETTINGS = 'honeypot';
 */
 function _getHoneypotValues($setting) {
   $values = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, $setting));
-  return $values;
+    return $values;
 }
+
 /**
  * Implements hook_civicrm_buildForm().
  *
  */
 function civihoneypot_civicrm_buildForm($formName, &$form) {
+  $protectAll = _getHoneypotValues('protect_all')[0];
   $formid = _getHoneypotValues('form_ids');
-  if (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid))) {
+  if (($formName == 'CRM_Contribute_Form_Contribution_Main') && ($protectAll == "1" || (in_array($form->getVar('_id'), $formid)))) {
 	$deny = _getHoneypotValues('ipban');
 	$remote = $_SERVER['REMOTE_ADDR'];
 	$parts = explode("." , $remote);
@@ -53,9 +55,9 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
  */
 function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
     $formid = _getHoneypotValues('form_ids');
-  
+    $protectAll = _getHoneypotValues('protect_all')[0];
 	//check for honeypot field values from randomized fields
-    if (($formName == 'CRM_Contribute_Form_Contribution_Main') && (in_array($form->getVar('_id'), $formid))) {
+    if (($formName == 'CRM_Contribute_Form_Contribution_Main') && ($protectAll == "1" || (in_array($form->getVar('_id'), $formid)))) {
 	  $limit = CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'limit');
 	  if ($limit !== null) {
 	    $now = $_SERVER['REQUEST_TIME'];
