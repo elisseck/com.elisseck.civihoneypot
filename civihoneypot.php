@@ -234,7 +234,7 @@ function civihoneypot_civicrm_navigationMenu(&$params) {
   $menu_items = array();
   CRM_Core_BAO_Navigation::retrieve($menu_item_search, $menu_items);
 
-  if ( ! empty($menu_items) ) {
+  if (!empty($menu_items)) {
     return;
   }
 
@@ -242,17 +242,22 @@ function civihoneypot_civicrm_navigationMenu(&$params) {
   if (is_integer($navId)) {
     $navId++;
   }
-  // Find the Report menu
-  $aID = CRM_Core_DAO::getFieldValue('CRM_Core_DAO_Navigation', 'Administer', 'id', 'name');
-  $params[$aID]['child'][$navId] = array(
+  // Find the Administration menu
+  $parentID = CRM_Core_DAO::singleValueQuery(
+    "SELECT id
+     FROM civicrm_navigation n
+     WHERE  n.name = 'Administer'
+       AND n.domain_id = " . CRM_Core_Config::domainID()
+  );
+  $params[$parentID]['child'][$navId] = array(
     'attributes' => array (
-      'label' => ts('Honeypot Settings',array('domain' => 'com.elisseck.civihoneypot')),
+      'label' => ts('Honeypot Settings', array('domain' => 'com.elisseck.civihoneypot')),
       'name' => 'Honeypot Settings',
       'url' => 'civicrm/honeypot/settings',
       'permission' => 'administer CiviCRM',
       'operator' => 'OR',
       'separator' => 1,
-      'parentID' => $aID,
+      'parentID' => $parentID,
       'navID' => $navId,
       'active' => 1
     ),
