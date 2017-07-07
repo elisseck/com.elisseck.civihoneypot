@@ -14,8 +14,8 @@
     <url desc="Support">https://github.com/elisseck/com.elisseck.civihoneypot</url>
     <url desc="Licensing">http://opensource.org/licenses/MIT</url>
   </urls>
-  <releaseDate>2017-06-05</releaseDate>
-  <version>1.0.3</version>
+  <releaseDate>2017-07-07</releaseDate>
+  <version>1.0.4</version>
   <develStage>stable</develStage>
   <compatibility>
     <ver>4.7</ver>
