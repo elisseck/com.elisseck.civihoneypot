@@ -6,9 +6,16 @@ const HONEYPOT_SETTINGS = 'honeypot';
 /*
 * Retrieve honeypot settings individually
 */
-function _getHoneypotValues($setting) {
-  $values = explode("," , CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, $setting));
-    return $values;
+function _getHoneypotValues() {
+  $values = Civi::settings()->get('honeypot_settings');
+
+  foreach (array('form_ids', 'field_names', 'ipban') as $field) {
+    if (!empty($values[$field])) {
+      $values[$field] = explode(',', $values[$field]);
+    }
+  }
+
+  return $values;
 }
 
 /**
@@ -16,36 +23,50 @@ function _getHoneypotValues($setting) {
  *
  */
 function civihoneypot_civicrm_buildForm($formName, &$form) {
-  $protectAll = _getHoneypotValues('protect_all')[0];
-  $formid = _getHoneypotValues('form_ids');
-  if (($formName == 'CRM_Contribute_Form_Contribution_Main') && ($protectAll == "1" || (in_array($form->getVar('_id'), $formid)))) {
-	$deny = _getHoneypotValues('ipban');
-	$remote = $_SERVER['REMOTE_ADDR'];
-	$parts = explode("." , $remote);
-	$wilds = array($parts[0].'.*',$parts[0].'.'.$parts[1].'.*',$parts[0].'.'.$parts[1].'.'.$parts[2].'.*');
-	if (in_array ($remote, $deny) || (bool)array_intersect($wilds, $deny)) {
-      header("location: http://example.org/");
-	  $errors['Banned User Access'] = ts( 'Banned IP was denied access to a CiviCRM Contribution Form' );
+  $settings = _getHoneypotValues();
+  if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
+    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
+  ) {
+	  $deny = CRM_Utils_Array::value('ipban', $settings, array());
+	  $remote = $_SERVER['REMOTE_ADDR'];
+	  $parts = explode("." , $remote);
+
+    if (count($parts)) {
+      $wilds = array(
+        sprintf('%s.*', $parts[0]),
+      );
+      if (!empty($parts[1])) {
+        $wilds[] = sprintf('%s.%s.*', $parts[0], $parts[1]);
+      }
+      if (!empty($parts[2])) {
+        $wilds[] = sprintf('%s.%s.%s.*', $parts[0], $parts[1], $parts[2]);
+      }
+	    if (in_array($remote, $deny) || (bool) array_intersect($wilds, $deny)) {
+        CRM_Core_Error::fatal(ts('Banned IP was denied access to a CiviCRM Contribution Form.'));
+      }
     }
-	$timestamp = $_SERVER['REQUEST_TIME'];
-	$fieldname = _getHoneypotValues('field_names');
-    $max = count($fieldname) - 1;
-    $randfieldname = $fieldname[rand(0,$max)];
-	
-    // Assumes templates are in a templates folder relative to this file
-    $templatePath = realpath(dirname(__FILE__)."/templates");
-	$template = CRM_Core_Smarty::singleton();
-	$template->assign_by_ref( 'fieldname', $randfieldname);
-	$template->assign_by_ref( 'timestamp', $timestamp);
-	
-    // Add the field element in the form
-    $form->addElement('text', $randfieldname, $randfieldname);
-	$form->addElement('text', 'timestamp', 'timestamp');
-	
-    // dynamically insert a template block in the page
-    CRM_Core_Region::instance('page-body')->add(array(
-      'template' => "{$templatePath}/civihoneypot.tpl"
-     ));
+
+	  $timestamp = $_SERVER['REQUEST_TIME'];
+	  $fieldname = CRM_Utils_Array::value('field_names', $settings);
+    if (!empty($fieldname)) {
+      $max = count($fieldname) - 1;
+      $randfieldname = $fieldname[rand(0, $max)];
+
+      // Assumes templates are in a templates folder relative to this file
+      $templatePath = realpath(dirname(__FILE__)."/templates");
+      $template = CRM_Core_Smarty::singleton();
+      $template->assign_by_ref( 'fieldname', $randfieldname);
+      $template->assign_by_ref( 'timestamp', $timestamp);
+
+      // Add the field element in the form
+      $form->addElement('text', $randfieldname, $randfieldname);
+      $form->addElement('text', 'timestamp', 'timestamp');
+
+      // dynamically insert a template block in the page
+      CRM_Core_Region::instance('page-body')->add(array(
+        'template' => "civihoneypot.tpl"
+      ));
+    }
   }
 }
 
@@ -54,29 +75,25 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
  *
  */
 function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
-    $formid = _getHoneypotValues('form_ids');
-    $protectAll = _getHoneypotValues('protect_all')[0];
+  $settings = _getHoneypotValues();
 	//check for honeypot field values from randomized fields
-    if (($formName == 'CRM_Contribute_Form_Contribution_Main') && ($protectAll == "1" || (in_array($form->getVar('_id'), $formid)))) {
-	  $limit = CRM_Core_BAO_Setting::getItem(HONEYPOT_SETTINGS, 'limit');
-	  if ($limit !== null) {
-	    $now = $_SERVER['REQUEST_TIME'];
-	    $then = $fields['timestamp'];
-	    if ($now - $then < $limit) {
-		  $errors['fast submission'] = ts( 'User submitted a CiviCRM form too quickly' );
-	    }
-	  }
-	  
-	  $fieldname = _getHoneypotValues('field_names');
-	  foreach ($fields as $key => $value) {
-		if (in_array($key, $fieldname)) {
-		  if ($value) {
-		    $errors['hidden field'] = ts( 'User filled in hidden field' );
-		  }  
-		}
-	  }
+  if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
+    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
+  ) {
+    if ($limit = CRM_Utils_Array::value('limit', $settings)) {
+      $delay = ($_SERVER['REQUEST_TIME'] - $fields['timestamp']);
+      if ($delay < $limit) {
+        $errors['_qf_default'] = ts('User submitted a CiviCRM form too quickly');
+      }
     }
-    return;
+
+	  $fieldnames = CRM_Utils_Array::value('field_names', $settings, array());
+	  foreach ($fields as $key => $value) {
+      if (in_array($key, $fieldnames) && $value) {
+        $errors['_qf_default'] = ts('User filled in hidden field');
+		  }
+		}
+  }
 }
 
 /**

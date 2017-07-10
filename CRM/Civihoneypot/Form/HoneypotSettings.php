@@ -6,68 +6,92 @@ require_once 'CRM/Core/Form.php';
  * @see http://wiki.civicrm.org/confluence/display/CRMDOC43/QuickForm+Reference
  */
 class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
-  CONST SETTINGS = 'honeypot';
+
+  protected $_honeypotSettings;
+
+  /**
+   * Set variables up before form is built.
+   */
+  public function preProcess() {
+    if (!CRM_Core_Permission::check('administer CiviCRM')) {
+      CRM_Core_Error::fatal(ts('You do not permission to access this page, please contact your system administrator.'));
+    }
+    $this->_honeypotSettings = Civi::settings()->get('honeypot_settings');
+  }
+
+  /**
+   * Set default values.
+   *
+   * @return array
+   */
+  public function setDefaultValues() {
+    return $this->_honeypotSettings;
+  }
+
   function buildQuickForm() {
-    CRM_Utils_System::setTitle(ts('Configure Honeypot', array('domain' => 'com.elisseck.civihoneypot')));
-    $this->processHoneypotOptions('build');
-    $arr1 = $this->processHoneypotOptions('defaults');
-    $defaults = $arr1;
-    $this->setDefaults($defaults);
+    $this->addEntityRef('form_ids',
+      ts('Contribution Page(s)'),
+      array(
+        'entity' => 'ContributionPage',
+        'placeholder' => ts('- Select Contribution Page -'),
+        'select' => array('minimumInputLength' => 0),
+        'multiple' => TRUE,
+        'api' => array('label_field' => 'title'),
+      )
+    );
+    $this->add('text', 'field_names', ts('Field Names', array('domain' => 'com.elisseck.civihoneypot')), TRUE);
+    $this->add('advcheckbox', 'protect_all', ts('Protect All Pages', array('domain' => 'com.elisseck.civihoneypot')));
+    $this->add('text', 'limit', ts('Time Limiter (in secs)', array('domain' => 'com.elisseck.civihoneypot')));
+    $this->add('textarea', 'ipban', ts('Banned IP Address(es)', array('domain' => 'com.elisseck.civihoneypot')));
+    $this->addFormRule(array('CRM_Civihoneypot_Form_HoneypotSettings', 'formRule'), $this);
+
     $this->addButtons(array(
       array(
         'type' => 'submit',
         'name' => ts('Submit', array('domain' => 'com.elisseck.civihoneypot')),
         'isDefault' => TRUE,
       ),
+      array(
+        'type' => 'cancel',
+        'name' => ts('Cancel', array('domain' => 'com.elisseck.civihoneypot')),
+      ),
     ));
     parent::buildQuickForm();
   }
-  function processHoneypotOptions($mode) {
-    if ( $mode == 'build' ) {
-	  $this->addEntityRef('form_ids', ts('Contribution Pages'), array(
-		'entity' => 'ContributionPage',
-		'placeholder' => ts('- Select Contribution Page -'),
-		'select' => array('minimumInputLength' => 0),
-		'multiple' => TRUE,
-		'api' => array('label_field' => 'title'),
-	  ));
-      $this->add('text', 'field_names', ts('Field Names', array('domain' => 'com.elisseck.civihoneypot')));
-      $this->add('advcheckbox', 'protect_all', ts('Protect All Pages', array('domain' => 'com.elisseck.civihoneypot')));
-	  $this->add('text', 'limit', ts('Time Limiter', array('domain' => 'com.elisseck.civihoneypot')));
-	  $this->add('textarea', 'ipban', ts('Banned IP Addresses', array('domain' => 'com.elisseck.civihoneypot')));
-      $this->addRule('field_names', 'Enter Field Names', 'required');
+
+  /**
+   * Global form rule.
+   *
+   * @param array $fields
+   *   The input form values.
+   * @param array $files
+   *   The uploaded files if any.
+   * @param $self
+   *
+   * @return bool|array
+   *   true if no errors, else array of errors
+   */
+  public static function formRule($fields, $files, $self) {
+    $errors = array();
+    if ($fields['protect_all'] != "1" && empty($fields['form_ids'])) {
+      $errors['_qf_default'] = ts('You must either select at least one form or check the "Protect All" box');
     }
-    else if ( $mode == 'defaults' ) {
-      $defaults = array(
-        'form_ids' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'form_ids'),
-        'protect_all' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'protect_all'),
-        'field_names' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'field_names'),
-		'limit' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'limit'),
-		'ipban' => CRM_Core_BAO_Setting::getItem(self::SETTINGS, 'ipban'),
-      );
-      return $defaults;
-    }
-    else if ( $mode == 'post' ) {
-      $values = $this->exportValues();
-      CRM_Core_BAO_Setting::setItem($values['form_ids'], self::SETTINGS, 'form_ids');
-      CRM_Core_BAO_Setting::setItem($values['protect_all'], self::SETTINGS, 'protect_all');
-      CRM_Core_BAO_Setting::setItem($values['field_names'], self::SETTINGS, 'field_names');
-	  CRM_Core_BAO_Setting::setItem($values['limit'], self::SETTINGS, 'limit');
-	  CRM_Core_BAO_Setting::setItem($values['ipban'], self::SETTINGS, 'ipban');
-    }
+
+    return $errors;
   }
+
 
   function postProcess() {
     parent::postProcess();
-	$values = $this->exportvalues();
-	if ($values['protect_all'] == "1" || $values['form_ids']) {
-      $this->processHoneypotOptions('post');
-      $statusMsg = ts('Your settings have been saved.', array('domain' => 'com.elisseck.civihoneypot'));
-      CRM_Core_Session::setStatus( $statusMsg, '', 'success' );
-	}
-	else {
-	  $statusMsg = ts('Settings not saved! You must either select at least one form or check the "Protect All" box');
-	  CRM_Core_Session::setStatus( $statusMsg, '', 'failure' );
-	}
+	  $values = $this->exportvalues();
+
+    // cleanup submitted values
+    unset($values['qfKey']);
+    unset($values['entryURL']);
+    unset($values['_qf_default']);
+    unset($values['_qf_HoneypotSettings_submit']);
+
+    Civi::settings()->set('honeypot_settings', $values);
+    CRM_Core_Session::setStatus(ts("Honeypot settings saved"), ts('Success'), 'success');
   }
 }
