@@ -28,24 +28,25 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
     ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
   ) {
 	  $deny = CRM_Utils_Array::value('ipban', $settings, array());
-	  $remote = $_SERVER['REMOTE_ADDR'];
-	  $parts = explode("." , $remote);
+      if ($deny) {
+	    $remote = $_SERVER['REMOTE_ADDR'];
+	    $parts = explode("." , $remote);
 
-    if (count($parts)) {
-      $wilds = array(
-        sprintf('%s.*', $parts[0]),
-      );
-      if (!empty($parts[1])) {
-        $wilds[] = sprintf('%s.%s.*', $parts[0], $parts[1]);
+        if (count($parts)) {
+          $wilds = array(
+          sprintf('%s.*', $parts[0]),
+          );
+          if (!empty($parts[1])) {
+            $wilds[] = sprintf('%s.%s.*', $parts[0], $parts[1]);
+          }
+          if (!empty($parts[2])) {
+            $wilds[] = sprintf('%s.%s.%s.*', $parts[0], $parts[1], $parts[2]);
+          }
+	      if (in_array($remote, $deny) || (bool) array_intersect($wilds, $deny)) {
+            CRM_Core_Error::fatal(ts('Banned IP was denied access to a CiviCRM Contribution Form.'));
+          }
+        }
       }
-      if (!empty($parts[2])) {
-        $wilds[] = sprintf('%s.%s.%s.*', $parts[0], $parts[1], $parts[2]);
-      }
-	    if (in_array($remote, $deny) || (bool) array_intersect($wilds, $deny)) {
-        CRM_Core_Error::fatal(ts('Banned IP was denied access to a CiviCRM Contribution Form.'));
-      }
-    }
-
 	  $timestamp = $_SERVER['REQUEST_TIME'];
 	  $fieldname = CRM_Utils_Array::value('field_names', $settings);
     if (!empty($fieldname)) {
