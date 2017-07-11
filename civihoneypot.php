@@ -1,31 +1,15 @@
 <?php
 
 require_once 'civihoneypot.civix.php';
-const HONEYPOT_SETTINGS = 'honeypot';
-
-/*
-* Retrieve honeypot settings individually
-*/
-function _getHoneypotValues() {
-  $values = Civi::settings()->get('honeypot_settings');
-
-  foreach (array('form_ids', 'field_names', 'ipban') as $field) {
-    if (!empty($values[$field])) {
-      $values[$field] = explode(',', $values[$field]);
-    }
-  }
-
-  return $values;
-}
 
 /**
  * Implements hook_civicrm_buildForm().
  *
  */
 function civihoneypot_civicrm_buildForm($formName, &$form) {
-  $settings = _getHoneypotValues();
-  if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
+  $settings = CRM_Civihoneypot_Utils::getHoneypotSettings();
+  if (($settings['protect_all'] == "1" && in_array($formName, CRM_Civihoneypot_Utils::getAllCiviFormNames()) ||
+    ($formName == 'CRM_Contribute_Form_Contribution_Main' && in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
   ) {
 	  $deny = CRM_Utils_Array::value('ipban', $settings, array());
       if ($deny) {
@@ -76,10 +60,10 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
  *
  */
 function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
-  $settings = _getHoneypotValues();
+  $settings = CRM_Civihoneypot_Utils::getHoneypotSettings();
 	//check for honeypot field values from randomized fields
-  if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
+  if (($settings['protect_all'] == "1" && in_array($formName, CRM_Civihoneypot_Utils::getAllCiviFormNames()) ||
+    ($formName == 'CRM_Contribute_Form_Contribution_Main' && in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
   ) {
     if ($limit = CRM_Utils_Array::value('limit', $settings)) {
       $delay = ($_SERVER['REQUEST_TIME'] - $fields['timestamp']);
