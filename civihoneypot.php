@@ -37,20 +37,36 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
       $max = count($fieldname) - 1;
       $randfieldname = $fieldname[rand(0, $max)];
 
-      // Assumes templates are in a templates folder relative to this file
-      $templatePath = realpath(dirname(__FILE__)."/templates");
-      $template = CRM_Core_Smarty::singleton();
-      $template->assign_by_ref( 'fieldname', $randfieldname);
-      $template->assign_by_ref( 'timestamp', $timestamp);
+      if ($formName == 'CRM_Profile_Form_Dynamic') {
+        $form->_fields = array_merge($form->_fields, array(
+          'timestamp' => array(
+            'name' => 'timestamp',
+          ),
+          $randfieldname => array(
+            'name' => $randfieldname,
+          ),
+        ));
+        $form->assign('fields', $form->_fields);
 
-      // Add the field element in the form
-      $form->addElement('text', $randfieldname, $randfieldname);
-      $form->addElement('text', 'timestamp', 'timestamp');
+        $form->add('text', 'timestamp', NULL, array('style' => 'display: none;'));
+        $form->add('text', $randfieldname, NULL, array('style' => 'display: none;'));
+        $form->setDefaults(array('timestamp' => $timestamp));
+      }
+      else {
+        $template = CRM_Core_Smarty::singleton();
+        $template->assign_by_ref( 'fieldname', $randfieldname);
+        $template->assign_by_ref( 'timestamp', $timestamp);
+        CRM_Civihoneypot_Utils::assignTemplateVar($template, $formName, $form);
 
-      // dynamically insert a template block in the page
-      CRM_Core_Region::instance('page-body')->add(array(
-        'template' => "civihoneypot.tpl"
-      ));
+        // Add the field element in the form
+        $form->addElement('text', $randfieldname, $randfieldname);
+        $form->addElement('text', 'timestamp', 'timestamp');
+
+        // dynamically insert a template block in the page
+        CRM_Core_Region::instance('page-body')->add(array(
+          'template' => "civihoneypot.tpl"
+        ));
+      }
     }
   }
 }

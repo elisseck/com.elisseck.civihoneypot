@@ -12,10 +12,12 @@ class CRM_Civihoneypot_Utils {
   public static function getAllCiviFormNames() {
     // TODO : For now we are only supporting honeypot validation on
     //  online contribution page and event registration. Need to
-    //  figure out what other online formnames to be included. 
+    //  figure out what other online formnames to be included.
     return array(
       'CRM_Contribute_Form_Contribution_Main',
       'CRM_Event_Form_Registration_Register',
+      'CRM_Profile_Form_Dynamic',
+      'CRM_Mailing_Form_Subscribe',
     );
   }
 
@@ -36,6 +38,34 @@ class CRM_Civihoneypot_Utils {
     }
 
     return $values;
+  }
+
+  /**
+   * Function used to assign html class and id selectors
+   *  based on $formName later used in honeypot.tpl
+   *
+   * @param CRM_Core_Smarty $template
+   * @param string $formName
+   * @param CRM_Core_Form $form
+   *
+   */
+  public static function assignTemplateVar(&$template, $formName, $form) {
+    $insertAfterClass = $noValidateSelectorID = '';
+    if ($formName == 'CRM_Contribute_Form_Contribution_Main') {
+      $insertAfterClass = '.custom_pre_profile-group';
+      $noValidateSelectorID = '#Main';
+    }
+    elseif ($formName == 'CRM_Event_Form_Registration_Register') {
+      $insertAfterClass = '.custom_pre-section';
+      $noValidateSelectorID = '#Register';
+    }
+    elseif ($formName == 'CRM_Mailing_Form_Subscribe') {
+      $insertAfterClass = '.form-layout-compressed';
+      $noValidateSelectorID = '#Subscribe';
+    }
+
+    $template->assign_by_ref('insertAfterClass', $insertAfterClass);
+    $template->assign_by_ref('noValidateSelectorID', $noValidateSelectorID);
   }
 
 }
