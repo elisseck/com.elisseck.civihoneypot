@@ -78,6 +78,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
     }
 
     return $errors;
+
   }
 
 
@@ -96,6 +97,8 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
     foreach(array_keys($domains['values']) as $domain) {
      Civi::settings($domain)->set('honeypot_settings', $values);
     }
+    // Flush caches to ensure settings are applied immediately
+    civicrm_api3('System', 'flush');
     CRM_Core_Session::setStatus(ts("Honeypot settings saved"), ts('Success'), 'success');
   }
 }
