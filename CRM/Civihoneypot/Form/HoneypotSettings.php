@@ -83,7 +83,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
 
   function postProcess() {
     parent::postProcess();
-	  $values = $this->exportvalues();
+    $values = $this->exportvalues();
 
     // cleanup submitted values
     unset($values['qfKey']);
@@ -91,7 +91,11 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
     unset($values['_qf_default']);
     unset($values['_qf_HoneypotSettings_submit']);
 
-    Civi::settings()->set('honeypot_settings', $values);
+    // Store new settings in every domain, not just this one (for global effect)
+    $domains = civicrm_api3('Domain', 'get');
+    foreach(array_keys($domains['values']) as $domain) {
+     Civi::settings($domain)->set('honeypot_settings', $values);
+    }
     CRM_Core_Session::setStatus(ts("Honeypot settings saved"), ts('Success'), 'success');
   }
 }
