@@ -9,7 +9,7 @@ const HONEYPOT_SETTINGS = 'honeypot';
 function _getHoneypotValues() {
   $values = Civi::settings()->get('honeypot_settings');
 
-  foreach (array('form_ids', 'field_names', 'ipban') as $field) {
+  foreach (array('honeypot_form_ids', 'honeypot_field_names', 'honeypot_ipban') as $field) {
     if (!empty($values[$field])) {
       $values[$field] = explode(',', $values[$field]);
     }
@@ -25,9 +25,9 @@ function _getHoneypotValues() {
 function civihoneypot_civicrm_buildForm($formName, &$form) {
   $settings = _getHoneypotValues();
   if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
+    ($settings['honeypot_protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_form_ids', $settings, array()))))
   ) {
-    $deny = CRM_Utils_Array::value('ipban', $settings, array());
+    $deny = CRM_Utils_Array::value('honeypot_ipban', $settings, array());
     if ($deny) {
       $remote = $_SERVER['REMOTE_ADDR'];
       $parts = explode("." , $remote);
@@ -48,7 +48,7 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
       }
     }
     $timestamp = $_SERVER['REQUEST_TIME'];
-    $fieldname = CRM_Utils_Array::value('field_names', $settings);
+    $fieldname = CRM_Utils_Array::value('honeypot_field_names', $settings);
     if (!empty($fieldname)) {
       $max = count($fieldname) - 1;
       $randfieldname = $fieldname[rand(0, $max)];
@@ -56,8 +56,8 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
       // Assumes templates are in a templates folder relative to this file
       $templatePath = realpath(dirname(__FILE__)."/templates");
       $template = CRM_Core_Smarty::singleton();
-      $template->assign_by_ref( 'fieldname', $randfieldname);
-      $template->assign_by_ref( 'timestamp', $timestamp);
+      $template->assign_by_ref('fieldname', $randfieldname);
+      $template->assign_by_ref('timestamp', $timestamp);
 
       // Add the field element in the form
       $form->addElement('text', $randfieldname, $randfieldname);
@@ -77,18 +77,18 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
  */
 function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   $settings = _getHoneypotValues();
-	//check for honeypot field values from randomized fields
+  //check for honeypot field values from randomized fields
   if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
+    ($settings['honeypot_protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_form_ids', $settings, array()))))
   ) {
-    if ($limit = CRM_Utils_Array::value('limit', $settings)) {
+    if ($limit = CRM_Utils_Array::value('honeypot_limit', $settings)) {
       $delay = ($_SERVER['REQUEST_TIME'] - $fields['timestamp']);
       if ($delay < $limit) {
         $errors['_qf_default'] = ts('User submitted a CiviCRM form too quickly');
       }
     }
 
-    $fieldnames = CRM_Utils_Array::value('field_names', $settings, array());
+    $fieldnames = CRM_Utils_Array::value('honeypot_field_names', $settings, array());
     foreach ($fields as $key => $value) {
       if (in_array($key, $fieldnames) && $value) {
         $errors['_qf_default'] = ts('User filled in hidden field');
