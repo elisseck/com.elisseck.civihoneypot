@@ -35,50 +35,50 @@
  * Settings metadata file
  */
 return array(
-  'form_ids' => array(
+  'honeypot_form_ids' => array(
     'group_name' => 'CiviHoneyPot settings',
     'group' => 'honeypot',
-    'name' => 'form_ids',
+    'name' => 'honeypot_form_ids',
     'type' => 'string',
     'default' => NULL,
     'is_domain' => 1,
     'title' => 'Contribution Pages',
     'add' => 1.0,
   ),
-  'protect_all' => array(
+  'honeypot_protect_all' => array(
     'group_name' => 'CiviHoneyPot settings',
     'group' => 'honeypot',
-    'name' => 'protect_all',
+    'name' => 'honeypot_protect_all',
     'type' => 'Integer',
     'default' => 0,
     'is_domain' => 1,
     'title' => 'Protect All Pages',
     'add' => 1.0,
   ),
-  'field_names' => array(
+  'honeypot_field_names' => array(
     'group_name' => 'CiviHoneyPot settings',
     'group' => 'honeypot',
-    'name' => 'field_names',
+    'name' => 'honeypot_field_names',
     'type' => 'String',
     'default' => NULL,
     'is_domain' => 1,
     'title' => 'Honeypot field names',
     'add' => 1.0,
   ),
-  'limit' => array(
+  'honeypot_limit' => array(
     'group_name' => 'CiviHoneyPot settings',
     'group' => 'honeypot',
-    'name' => 'limit',
+    'name' => 'honeypot_limit',
     'type' => 'String',
     'default' => NULL,
     'is_domain' => 1,
     'title' => 'Time Limiter',
     'add' => 1.0,
   ),
-  'ipban' => array(
+  'honeypot_ipban' => array(
     'group_name' => 'CiviHoneyPot settings',
     'group' => 'honeypot',
-    'name' => 'ipban',
+    'name' => 'honeypot_ipban',
     'type' => 'String',
     'default' => NULL,
     'is_domain' => 1,
