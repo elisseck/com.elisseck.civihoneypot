@@ -31,31 +31,42 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
   function buildQuickForm() {
     $this->addEntityRef('form_ids',
       ts('Contribution Page(s)'),
-      array(
+      [
         'entity' => 'ContributionPage',
         'placeholder' => ts('- Select Contribution Page -'),
-        'select' => array('minimumInputLength' => 0),
+        'select' => ['minimumInputLength' => 0],
         'multiple' => TRUE,
-        'api' => array('label_field' => 'title'),
-      )
+        'api' => ['label_field' => 'title'],
+      ],
     );
-    $this->add('text', 'field_names', ts('Field Names', array('domain' => 'com.elisseck.civihoneypot')), TRUE);
-    $this->add('advcheckbox', 'protect_all', ts('Protect All Pages', array('domain' => 'com.elisseck.civihoneypot')));
-    $this->add('text', 'limit', ts('Time Limiter (in secs)', array('domain' => 'com.elisseck.civihoneypot')));
-    $this->add('textarea', 'ipban', ts('Banned IP Address(es)', array('domain' => 'com.elisseck.civihoneypot')));
-    $this->addFormRule(array('CRM_Civihoneypot_Form_HoneypotSettings', 'formRule'), $this);
+    $this->add('text', 'field_names', ts('Field Names', ['domain' => 'com.elisseck.civihoneypot']), TRUE);
+    $this->add('advcheckbox', 'protect_all', ts('Protect All Contribution Pages', ['domain' => 'com.elisseck.civihoneypot']));
+    $this->addEntityRef('event_ids',
+      ts('Event Registration Form(s)'),
+      [
+        'entity' => 'Event',
+        'placeholder' => ts('- Select Event -'),
+        'select' => ['minimumInputLength' => 0],
+        'multiple' => TRUE,
+        'api' => ['label_field' => 'title'],
+      ],
+    );
+    $this->add('advcheckbox', 'protect_all_events', ts('Protect All Events', ['domain' => 'com.elisseck.civihoneypot']));
+    $this->add('text', 'limit', ts('Time Limiter (in secs)', ['domain' => 'com.elisseck.civihoneypot']));
+    $this->add('textarea', 'ipban', ts('Banned IP Address(es)', ['domain' => 'com.elisseck.civihoneypot']));
+    $this->addFormRule(['CRM_Civihoneypot_Form_HoneypotSettings', 'formRule'], $this);
 
-    $this->addButtons(array(
-      array(
+    $this->addButtons([
+      [
         'type' => 'submit',
-        'name' => ts('Submit', array('domain' => 'com.elisseck.civihoneypot')),
+        'name' => ts('Submit', ['domain' => 'com.elisseck.civihoneypot']),
         'isDefault' => TRUE,
-      ),
-      array(
+      ],
+      [
         'type' => 'cancel',
-        'name' => ts('Cancel', array('domain' => 'com.elisseck.civihoneypot')),
-      ),
-    ));
+        'name' => ts('Cancel', ['domain' => 'com.elisseck.civihoneypot']),
+      ],
+    ]);
     parent::buildQuickForm();
   }
 
@@ -72,7 +83,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
    *   true if no errors, else array of errors
    */
   public static function formRule($fields, $files, $self) {
-    $errors = array();
+    $errors = [];
     if ($fields['protect_all'] != "1" && empty($fields['form_ids'])) {
       $errors['_qf_default'] = ts('You must either select at least one form or check the "Protect All" box');
     }
