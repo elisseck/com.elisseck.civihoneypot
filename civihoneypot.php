@@ -24,9 +24,18 @@ function _getHoneypotValues() {
  */
 function civihoneypot_civicrm_buildForm($formName, &$form) {
   $settings = _getHoneypotValues();
+  $protect = FALSE;
   if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
+    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, []))))
   ) {
+    $protect = TRUE;
+  }
+  if ($formName == 'CRM_Event_Form_Registration_Register' &&
+    ($settings['protect_all_events'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('event_ids', $settings, []))))
+  ) {
+    $protect = TRUE;
+  }
+  if ($protect) {
 	  $deny = CRM_Utils_Array::value('ipban', $settings, array());
       if ($deny) {
 	    $remote = $_SERVER['REMOTE_ADDR'];
@@ -77,10 +86,19 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
  */
 function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form, &$errors) {
   $settings = _getHoneypotValues();
-	//check for honeypot field values from randomized fields
+  //check for honeypot field values from randomized fields
+  $protect = FALSE;
   if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, array()))))
+    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, []))))
   ) {
+    $protect = TRUE;
+  }
+  if ($formName == 'CRM_Event_Form_Registration_Register' &&
+    ($settings['protect_all_events'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('event_ids', $settings, []))))
+  ) {
+    $protect = TRUE;
+  }
+  if ($protect) {
     if ($limit = CRM_Utils_Array::value('limit', $settings)) {
       $delay = ($_SERVER['REQUEST_TIME'] - $fields['timestamp']);
       if ($delay < $limit) {
