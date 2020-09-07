@@ -84,8 +84,8 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
    */
   public static function formRule($fields, $files, $self) {
     $errors = [];
-    if ($fields['protect_all'] != "1" && empty($fields['form_ids'])) {
-      $errors['_qf_default'] = ts('You must either select at least one form or check the "Protect All" box');
+    if (!($fields['protect_all'] || $fields['form_ids'] || $fields['protect_all_events'] || $fields['event_ids'])) {
+      $errors['_qf_default'] = ts('You must either select at least one form or check one of the "Protect All" boxes.');
     }
 
     return $errors;
