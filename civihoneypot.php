@@ -3,13 +3,13 @@
 require_once 'civihoneypot.civix.php';
 const HONEYPOT_SETTINGS = 'honeypot';
 
-/*
-* Retrieve honeypot settings individually
-*/
+/**
+ * Retrieve honeypot settings individually
+ */
 function _getHoneypotValues() {
   $values = Civi::settings()->get('honeypot_settings');
 
-  foreach (array('form_ids', 'field_names', 'ipban') as $field) {
+  foreach (array('honeypot_form_ids', 'honeypot_field_names', 'honeypot_ipban') as $field) {
     if (!empty($values[$field])) {
       $values[$field] = explode(',', $values[$field]);
     }
@@ -26,38 +26,38 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
   $settings = _getHoneypotValues();
   $protect = FALSE;
   if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, []))))
+    ($settings['honeypot_protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_form_ids', $settings, []))))
   ) {
     $protect = TRUE;
   }
   if ($formName == 'CRM_Event_Form_Registration_Register' &&
-    ($settings['protect_all_events'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('event_ids', $settings, []))))
+    ($settings['honeypot_protect_all_events'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_event_ids', $settings, []))))
   ) {
     $protect = TRUE;
   }
   if ($protect) {
-	  $deny = CRM_Utils_Array::value('ipban', $settings, array());
-      if ($deny) {
-	    $remote = $_SERVER['REMOTE_ADDR'];
-	    $parts = explode("." , $remote);
+    $deny = CRM_Utils_Array::value('honeypot_ipban', $settings, []);
+    if ($deny) {
+      $remote = $_SERVER['REMOTE_ADDR'];
+      $parts = explode("." , $remote);
 
-        if (count($parts)) {
-          $wilds = array(
+      if (count($parts)) {
+        $wilds = array(
           sprintf('%s.*', $parts[0]),
-          );
-          if (!empty($parts[1])) {
-            $wilds[] = sprintf('%s.%s.*', $parts[0], $parts[1]);
-          }
-          if (!empty($parts[2])) {
-            $wilds[] = sprintf('%s.%s.%s.*', $parts[0], $parts[1], $parts[2]);
-          }
-	      if (in_array($remote, $deny) || (bool) array_intersect($wilds, $deny)) {
-            CRM_Core_Error::fatal(ts('Banned IP was denied access to a CiviCRM Contribution Form.'));
-          }
+        );
+        if (!empty($parts[1])) {
+          $wilds[] = sprintf('%s.%s.*', $parts[0], $parts[1]);
+        }
+        if (!empty($parts[2])) {
+          $wilds[] = sprintf('%s.%s.%s.*', $parts[0], $parts[1], $parts[2]);
+        }
+        if (in_array($remote, $deny) || (bool) array_intersect($wilds, $deny)) {
+          CRM_Core_Error::fatal(ts('Banned IP was denied access to a CiviCRM Contribution Form.'));
         }
       }
-	  $timestamp = $_SERVER['REQUEST_TIME'];
-	  $fieldname = CRM_Utils_Array::value('field_names', $settings);
+    }
+    $timestamp = $_SERVER['REQUEST_TIME'];
+    $fieldname = CRM_Utils_Array::value('honeypot_field_names', $settings);
     if (!empty($fieldname)) {
       $max = count($fieldname) - 1;
       $randfieldname = $fieldname[rand(0, $max)];
@@ -65,8 +65,8 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
       // Assumes templates are in a templates folder relative to this file
       $templatePath = realpath(dirname(__FILE__)."/templates");
       $template = CRM_Core_Smarty::singleton();
-      $template->assign_by_ref( 'fieldname', $randfieldname);
-      $template->assign_by_ref( 'timestamp', $timestamp);
+      $template->assign_by_ref('fieldname', $randfieldname);
+      $template->assign_by_ref('timestamp', $timestamp);
 
       // Add the field element in the form
       $form->addElement('text', $randfieldname, $randfieldname);
@@ -89,29 +89,29 @@ function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form,
   //check for honeypot field values from randomized fields
   $protect = FALSE;
   if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('form_ids', $settings, []))))
+    ($settings['honeypot_protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_form_ids', $settings, []))))
   ) {
     $protect = TRUE;
   }
   if ($formName == 'CRM_Event_Form_Registration_Register' &&
-    ($settings['protect_all_events'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('event_ids', $settings, []))))
+    ($settings['honeypot_protect_all_events'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_event_ids', $settings, []))))
   ) {
     $protect = TRUE;
   }
   if ($protect) {
-    if ($limit = CRM_Utils_Array::value('limit', $settings)) {
+    if ($limit = CRM_Utils_Array::value('honeypot_limit', $settings)) {
       $delay = ($_SERVER['REQUEST_TIME'] - $fields['timestamp']);
       if ($delay < $limit) {
         $errors['_qf_default'] = ts('User submitted a CiviCRM form too quickly');
       }
     }
 
-	  $fieldnames = CRM_Utils_Array::value('field_names', $settings, array());
-	  foreach ($fields as $key => $value) {
+    $fieldnames = CRM_Utils_Array::value('honeypot_field_names', $settings, array());
+    foreach ($fields as $key => $value) {
       if (in_array($key, $fieldnames) && $value) {
         $errors['_qf_default'] = ts('User filled in hidden field');
-		  }
-		}
+      }
+    }
   }
 }
 
@@ -285,9 +285,9 @@ function civihoneypot_civicrm_navigationMenu(&$params) {
      WHERE  n.name = 'Administer'
        AND n.domain_id = " . CRM_Core_Config::domainID()
   );
-  $params[$parentID]['child'][$navId] = array(
-    'attributes' => array (
-      'label' => ts('Honeypot Settings', array('domain' => 'com.elisseck.civihoneypot')),
+  $params[$parentID]['child'][$navId] = [
+    'attributes' => [
+      'label' => E::ts('Honeypot Settings'),
       'name' => 'Honeypot Settings',
       'url' => 'civicrm/honeypot/settings',
       'permission' => 'administer CiviCRM',
@@ -296,6 +296,6 @@ function civihoneypot_civicrm_navigationMenu(&$params) {
       'parentID' => $parentID,
       'navID' => $navId,
       'active' => 1
-    ),
-  );
+    ],
+  ];
 }

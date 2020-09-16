@@ -1,5 +1,6 @@
 <?php
-require_once 'CRM/Core/Form.php';
+use CRM_Civihoneypot_ExtensionUtil as E;
+
 /**
  * Form controller class
  *
@@ -28,21 +29,21 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
     return $this->_honeypotSettings;
   }
 
-  function buildQuickForm() {
-    $this->addEntityRef('form_ids',
+  public function buildQuickForm() {
+    $this->addEntityRef('honeypot_form_ids',
       ts('Contribution Page(s)'),
       [
         'entity' => 'ContributionPage',
-        'placeholder' => ts('- Select Contribution Page -'),
+        'placeholder' => E::ts('- Select Contribution Page -'),
         'select' => ['minimumInputLength' => 0],
         'multiple' => TRUE,
         'api' => ['label_field' => 'title'],
       ],
     );
-    $this->add('text', 'field_names', ts('Field Names', ['domain' => 'com.elisseck.civihoneypot']), TRUE);
-    $this->add('advcheckbox', 'protect_all', ts('Protect All Contribution Pages', ['domain' => 'com.elisseck.civihoneypot']));
-    $this->addEntityRef('event_ids',
-      ts('Event Registration Form(s)'),
+    $this->add('text', 'honeypot_field_names', E::ts('Field Names'), TRUE);
+    $this->add('advcheckbox', 'honeypot_protect_all', E::ts('Protect All Contribution Pages'));
+    $this->addEntityRef('honeypot_event_ids',
+      E::ts('Event Registration Form(s)'),
       [
         'entity' => 'Event',
         'placeholder' => ts('- Select Event -'),
@@ -51,20 +52,20 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
         'api' => ['label_field' => 'title'],
       ],
     );
-    $this->add('advcheckbox', 'protect_all_events', ts('Protect All Events', ['domain' => 'com.elisseck.civihoneypot']));
-    $this->add('text', 'limit', ts('Time Limiter (in secs)', ['domain' => 'com.elisseck.civihoneypot']));
-    $this->add('textarea', 'ipban', ts('Banned IP Address(es)', ['domain' => 'com.elisseck.civihoneypot']));
+    $this->add('advcheckbox', 'honeypot_protect_all_events', E::ts('Protect All Events'));
+    $this->add('text', 'honeypot_limit', E::ts('Time Limiter (in secs)'));
+    $this->add('textarea', 'honeypot_ipban', E::ts('Banned IP Address(es)'));
     $this->addFormRule(['CRM_Civihoneypot_Form_HoneypotSettings', 'formRule'], $this);
 
     $this->addButtons([
       [
         'type' => 'submit',
-        'name' => ts('Submit', ['domain' => 'com.elisseck.civihoneypot']),
+        'name' => E::ts('Submit'),
         'isDefault' => TRUE,
       ],
       [
         'type' => 'cancel',
-        'name' => ts('Cancel', ['domain' => 'com.elisseck.civihoneypot']),
+        'name' => E::ts('Cancel'),
       ],
     ]);
     parent::buildQuickForm();
@@ -84,17 +85,17 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
    */
   public static function formRule($fields, $files, $self) {
     $errors = [];
-    if (!($fields['protect_all'] || $fields['form_ids'] || $fields['protect_all_events'] || $fields['event_ids'])) {
+    if (!($fields['honeypot_protect_all'] || $fields['honeypot_form_ids'] || $fields['honeypot_protect_all_events'] || $fields['honeypot_event_ids'])) {
       $errors['_qf_default'] = ts('You must either select at least one form or check one of the "Protect All" boxes.');
     }
 
     return $errors;
+
   }
 
-
-  function postProcess() {
+  public function postProcess() {
     parent::postProcess();
-	  $values = $this->exportvalues();
+    $values = $this->exportvalues();
 
     // cleanup submitted values
     unset($values['qfKey']);
@@ -102,7 +103,13 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
     unset($values['_qf_default']);
     unset($values['_qf_HoneypotSettings_submit']);
 
-    Civi::settings()->set('honeypot_settings', $values);
+    // Store new settings in every domain, not just this one (for global effect)
+    foreach ($values as $setting => $value) {
+      civicrm_api3('Setting', 'create', ['domain_id' => 'all', $setting => $value]);
+    }
+    // Flush caches to ensure settings are applied immediately
+    civicrm_api3('System', 'flush');
     CRM_Core_Session::setStatus(ts("Honeypot settings saved"), ts('Success'), 'success');
   }
+
 }
