@@ -63,19 +63,20 @@ class CRM_Civihoneypot_Upgrader extends CRM_Civihoneypot_Upgrader_Base {
    */
   public function upgrade_4200() {
     $this->ctx->log->info('Applying update 4200');
-    $settings_migration_array = array(
+    $settings_migration_array = [
       'form_ids' => 'honeypot_form_ids',
       'protect_all' => 'honeypot_protect_all',
       'field_names' => 'honeypot_field_names',
       'limit' => 'honeypot_limit',
       'ipban' => 'honeypot_ipban',
-    );
+      'event_ids' => 'honeypot_event_ids',
+      'protect_all_events' => 'honeypot_protect_all_events',
+    ];
     foreach ($settings_migration_array as $old_setting => $new_setting) {
       CRM_Core_DAO::executeQuery("UPDATE civicrm_setting SET name = '{$new_setting}' WHERE name = '{$old_setting}'");
     }
     return TRUE;
   }
-
 
   /**
    * Example: Run an external SQL script.
