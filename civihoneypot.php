@@ -2,6 +2,7 @@
 
 require_once 'civihoneypot.civix.php';
 const HONEYPOT_SETTINGS = 'honeypot';
+use CRM_Civihoneypot_ExtensionUtil as E;
 
 /**
  * Retrieve honeypot settings individually
