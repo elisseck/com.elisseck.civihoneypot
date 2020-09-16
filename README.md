@@ -1,10 +1,10 @@
 # com.elisseck.civihoneypot
-Simple honeypot fields for CiviCRM Contribute forms.
-Development supported by Northeast Sustainable Energy Association
+Simple honeypot fields for CiviCRM Contribute forms and CiviCRM Event Forms
+First round development supported by Northeast Sustainable Energy Association. Currently a volunteer time project.
 
 Features:
 - Classic hidden honeypot field, configurable name and id
-- Configure which Contribute forms to protect by form ID (More form types coming in the future)
+- Configure which Contribute or Event forms to protect by form ID (More form types coming in the future)
 - Configurable velocity limiter for submissions - set the minimum number of seconds that must pass before you accept a form submission
 - IP Banning from protected forms based on manually entered list (Supports wildcard bans such as 198.168.0.\*, 198.168.\*, 198.* etc. Use with caution!).
 
