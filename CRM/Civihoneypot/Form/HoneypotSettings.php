@@ -17,7 +17,12 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
     if (!CRM_Core_Permission::check('administer CiviCRM')) {
       CRM_Core_Error::fatal(ts('You do not permission to access this page, please contact your system administrator.'));
     }
-    $this->_honeypotSettings = Civi::settings()->get('honeypot_settings');
+    //this can't be right but I don't understand the fragmented documentation at all
+    $settings = ['honeypot_form_ids', 'honeypot_protect_all', 'honeypot_field_names', 'honeypot_limit', 'honeypot_ipban', 'honeypot_event_ids', 'honeypot_protect_all_events'];
+    foreach ($settings as $setting) {
+      $this->_honeypotSettings[$setting] = Civi::settings()->get($setting);
+    }
+
   }
 
   /**
@@ -95,7 +100,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
 
   public function postProcess() {
     parent::postProcess();
-    $values = $this->exportvalues();
+    $values = $this->exportValues();
 
     // cleanup submitted values
     unset($values['qfKey']);
@@ -105,10 +110,11 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
 
     // Store new settings in every domain, not just this one (for global effect)
     foreach ($values as $setting => $value) {
-      civicrm_api3('Setting', 'create', ['domain_id' => 'all', $setting => $value]);
+      Civi::settings()->set($setting, $value);
     }
+
     // Flush caches to ensure settings are applied immediately
-    civicrm_api3('System', 'flush');
+    //civicrm_api3('System', 'flush');
     CRM_Core_Session::setStatus(ts("Honeypot settings saved"), ts('Success'), 'success');
   }
 

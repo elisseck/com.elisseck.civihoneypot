@@ -8,9 +8,14 @@ use CRM_Civihoneypot_ExtensionUtil as E;
  * Retrieve honeypot settings individually
  */
 function _getHoneypotValues() {
-  $values = Civi::settings()->get('honeypot_settings');
+  $values = [];
+  //this can't be right but I don't understand the fragmented documentation at all
+  $settings = ['honeypot_form_ids', 'honeypot_protect_all', 'honeypot_field_names', 'honeypot_limit', 'honeypot_ipban', 'honeypot_event_ids', 'honeypot_protect_all_events'];
+  foreach ($settings as $setting) {
+    $values[$setting] = Civi::settings()->get($setting);
+  }
 
-  foreach (array('honeypot_form_ids', 'honeypot_field_names', 'honeypot_ipban') as $field) {
+  foreach (['honeypot_form_ids', 'honeypot_field_names', 'honeypot_ipban', 'honeypot_event_ids'] as $field) {
     if (!empty($values[$field])) {
       $values[$field] = explode(',', $values[$field]);
     }
@@ -40,7 +45,7 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
     $deny = CRM_Utils_Array::value('honeypot_ipban', $settings, []);
     if ($deny) {
       $remote = $_SERVER['REMOTE_ADDR'];
-      $parts = explode("." , $remote);
+      $parts = explode(".", $remote);
 
       if (count($parts)) {
         $wilds = array(
