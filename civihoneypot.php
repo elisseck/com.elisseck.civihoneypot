@@ -257,51 +257,15 @@ function civihoneypot_civicrm_preProcess($formName, &$form) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
  *
+ */
 function civihoneypot_civicrm_navigationMenu(&$menu) {
-  _civihoneypot_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => ts('The Page', array('domain' => 'com.elisseck.civihoneypot')),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
+  _civihoneypot_civix_insert_navigation_menu($menu, 'Administer', [
+    'label' => E::ts('Honeypot Settings'),
+    'name' => 'Honeypot Settings',
+    'url' => 'civicrm/honeypot/settings',
+    'permission' => 'administer CiviCRM',
     'operator' => 'OR',
-    'separator' => 0,
-  ));
+    'separator' => 1,
+  ]);
   _civihoneypot_civix_navigationMenu($menu);
-} // */
-
-function civihoneypot_civicrm_navigationMenu(&$params) {
-
-  // Check that our item doesn't already exist
-  $menu_item_search = array('url' => 'civicrm/trends');
-  $menu_items = array();
-  CRM_Core_BAO_Navigation::retrieve($menu_item_search, $menu_items);
-
-  if (!empty($menu_items)) {
-    return;
-  }
-
-  $navId = CRM_Core_DAO::singleValueQuery("SELECT max(id) FROM civicrm_navigation");
-  if (is_integer($navId)) {
-    $navId++;
-  }
-  // Find the Administration menu
-  $parentID = CRM_Core_DAO::singleValueQuery(
-    "SELECT id
-     FROM civicrm_navigation n
-     WHERE  n.name = 'Administer'
-       AND n.domain_id = " . CRM_Core_Config::domainID()
-  );
-  $params[$parentID]['child'][$navId] = [
-    'attributes' => [
-      'label' => E::ts('Honeypot Settings'),
-      'name' => 'Honeypot Settings',
-      'url' => 'civicrm/honeypot/settings',
-      'permission' => 'administer CiviCRM',
-      'operator' => 'OR',
-      'separator' => 1,
-      'parentID' => $parentID,
-      'navID' => $navId,
-      'active' => 1
-    ],
-  ];
 }
