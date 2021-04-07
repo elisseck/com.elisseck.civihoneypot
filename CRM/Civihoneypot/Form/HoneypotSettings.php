@@ -43,7 +43,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
         'select' => ['minimumInputLength' => 0],
         'multiple' => TRUE,
         'api' => ['label_field' => 'title'],
-      ],
+      ]
     );
     $this->add('text', 'honeypot_field_names', E::ts('Field Names'), TRUE);
     $this->add('advcheckbox', 'honeypot_protect_all', E::ts('Protect All Contribution Pages'));
@@ -55,7 +55,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
         'select' => ['minimumInputLength' => 0],
         'multiple' => TRUE,
         'api' => ['label_field' => 'title'],
-      ],
+      ]
     );
     $this->add('advcheckbox', 'honeypot_protect_all_events', E::ts('Protect All Events'));
     $this->add('text', 'honeypot_limit', E::ts('Time Limiter (in secs)'));
