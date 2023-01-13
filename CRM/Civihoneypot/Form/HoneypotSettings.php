@@ -45,7 +45,7 @@ class CRM_Civihoneypot_Form_HoneypotSettings extends CRM_Core_Form {
         'api' => ['label_field' => 'title'],
       ]
     );
-    $this->add('text', 'honeypot_field_names', E::ts('Field Names'), TRUE);
+    $this->add('text', 'honeypot_field_names', E::ts('Field Names'), [TRUE]);
     $this->add('advcheckbox', 'honeypot_protect_all', E::ts('Protect All Contribution Pages'));
     $this->addEntityRef('honeypot_event_ids',
       E::ts('Event Registration Form(s)'),
