@@ -32,17 +32,17 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
   $settings = _getHoneypotValues();
   $protect = FALSE;
   if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['honeypot_protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_form_ids', $settings, []))))
+    ($settings['honeypot_protect_all'] == "1" || (in_array($form->getVar('_id'), $settings['honeypot_form_ids'] ?? [])))
   ) {
     $protect = TRUE;
   }
   if ($formName == 'CRM_Event_Form_Registration_Register' &&
-    ($settings['honeypot_protect_all_events'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_event_ids', $settings, []))))
+    ($settings['honeypot_protect_all_events'] == "1" || (in_array($form->getVar('_id'), $settings['honeypot_event_ids'] ?? [])))
   ) {
     $protect = TRUE;
   }
   if ($protect) {
-    $deny = CRM_Utils_Array::value('honeypot_ipban', $settings, []);
+    $deny = $settings['honeypot_ipban'] ?? [];
     if ($deny) {
       $remote = $_SERVER['REMOTE_ADDR'];
       $parts = explode(".", $remote);
@@ -63,13 +63,13 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
       }
     }
     $timestamp = $_SERVER['REQUEST_TIME'];
-    $fieldname = CRM_Utils_Array::value('honeypot_field_names', $settings);
+    $fieldname = $settings['honeypot_field_names'] ?? NULL;
     if (!empty($fieldname)) {
       $max = count($fieldname) - 1;
       $randfieldname = $fieldname[rand(0, $max)];
 
       // Assumes templates are in a templates folder relative to this file
-      $templatePath = realpath(dirname(__FILE__)."/templates");
+      $templatePath = realpath(dirname(__FILE__) . "/templates");
       $template = CRM_Core_Smarty::singleton();
       $template->assign_by_ref('fieldname', $randfieldname);
       $template->assign_by_ref('timestamp', $timestamp);
@@ -80,13 +80,13 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
 
       // dynamically insert a template block in the page
       CRM_Core_Region::instance('page-body')->add(array(
-        'template' => "civihoneypot.tpl"
+        'template' => "civihoneypot.tpl",
       ));
     }
   }
 }
 
-/*
+/**
  * Implements hook_civicrm_validateForm().
  *
  */
@@ -95,24 +95,24 @@ function civihoneypot_civicrm_validateForm($formName, &$fields, &$files, &$form,
   //check for honeypot field values from randomized fields
   $protect = FALSE;
   if ($formName == 'CRM_Contribute_Form_Contribution_Main' &&
-    ($settings['honeypot_protect_all'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_form_ids', $settings, []))))
+    ($settings['honeypot_protect_all'] == "1" || (in_array($form->getVar('_id'), $settings['honeypot_form_ids'] ?? [])))
   ) {
     $protect = TRUE;
   }
   if ($formName == 'CRM_Event_Form_Registration_Register' &&
-    ($settings['honeypot_protect_all_events'] == "1" || (in_array($form->getVar('_id'), CRM_Utils_Array::value('honeypot_event_ids', $settings, []))))
+    ($settings['honeypot_protect_all_events'] == "1" || (in_array($form->getVar('_id'), $settings['honeypot_event_ids'] ?? [])))
   ) {
     $protect = TRUE;
   }
   if ($protect) {
-    if ($limit = CRM_Utils_Array::value('honeypot_limit', $settings)) {
+    if ($limit = ($settings['honeypot_limit'] ?? NULL)) {
       $delay = ($_SERVER['REQUEST_TIME'] - $fields['timestamp']);
       if ($delay < $limit) {
         $errors['_qf_default'] = ts('User submitted a CiviCRM form too quickly');
       }
     }
 
-    $fieldnames = CRM_Utils_Array::value('honeypot_field_names', $settings, array());
+    $fieldnames = $settings['honeypot_field_names'] ?? [];
     foreach ($fields as $key => $value) {
       if (in_array($key, $fieldnames) && $value) {
         $errors['_qf_default'] = ts('User filled in hidden field');
@@ -191,8 +191,7 @@ function civihoneypot_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
  *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
  *
-
- // */
+ */
 
 /**
  * Implements hook_civicrm_navigationMenu().
