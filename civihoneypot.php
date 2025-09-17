@@ -71,8 +71,8 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
       // Assumes templates are in a templates folder relative to this file
       $templatePath = realpath(dirname(__FILE__) . "/templates");
       $template = CRM_Core_Smarty::singleton();
-      $template->assign_by_ref('fieldname', $randfieldname);
-      $template->assign_by_ref('timestamp', $timestamp);
+      $template->assign('fieldname', $randfieldname);
+      $template->assign('timestamp', $timestamp);
 
       // Add the field element in the form
       $form->addElement('text', $randfieldname, $randfieldname);
