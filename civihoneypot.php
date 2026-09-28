@@ -48,9 +48,9 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
       $parts = explode(".", $remote);
 
       if (count($parts)) {
-        $wilds = array(
+        $wilds = [
           sprintf('%s.*', $parts[0]),
-        );
+        ];
         if (!empty($parts[1])) {
           $wilds[] = sprintf('%s.%s.*', $parts[0], $parts[1]);
         }
@@ -79,9 +79,9 @@ function civihoneypot_civicrm_buildForm($formName, &$form) {
       $form->addElement('text', 'timestamp', 'timestamp');
 
       // dynamically insert a template block in the page
-      CRM_Core_Region::instance('page-body')->add(array(
+      CRM_Core_Region::instance('page-body')->add([
         'template' => "civihoneypot.tpl",
-      ));
+      ]);
     }
   }
 }
